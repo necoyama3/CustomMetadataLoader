@@ -152,6 +152,34 @@ public class MetadataUtil {
         customMetadata.values = customMetadataValues;
         return customMetadata;
     }
+
+    public static void deleteMetadata(String type_x,String[] fullNames) {
+        List<MetadataService.DeleteResult> results = getPort().deleteMetadata(type_x, fullNames);
+        if (results!=null) {
+            for (MetadataService.DeleteResult deleteResult : results) {
+                if (deleteResult==null || deleteResult.success) {
+                     continue;
+                }
+                // Construct error message and throw an exception
+                if (deleteResult.errors!=null) {
+                    List<String> messages = new List<String>();
+                    messages.add((deleteResult.errors.size()==1 ? 'Error ' : 'Errors ') + 'occured processing component ' + deleteResult.fullName + '.');
+                    for(MetadataService.Error error : deleteResult.errors){
+                        messages.add(error.message + ' (' + error.statusCode + ').' + ( error.fields!=null && error.fields.size()>0 ? ' Fields ' + String.join(error.fields, ',') + '.' : '' ) );
+                    }
+                    if(messages.size()>0){
+                        ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.Error, String.join(messages, ' ')));
+                        System.debug(LoggingLevel.ERROR, String.join(messages, ''));
+                        return;
+                    }
+                }
+                if(!deleteResult.success){
+                    ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.Error, 'Request failed with no specified error.'));
+                    return;
+                }
+            }
+        }
+    }
     
     
     private static void upsertMetadataAndValidate(MetadataService.Metadata[] records) {
