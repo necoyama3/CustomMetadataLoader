@@ -42,7 +42,7 @@ public class CSVFileUtil {
             // check for blank CSV lines (only commas)
             if (line.replaceAll(',','').trim().length() == 0) break;
             
-            List<String> fields = line.split(',');  
+            List<String> fields = line.split(',', -1);  
             List<String> cleanFields = new List<String>();
             String compositeField;
             Boolean makeCompositeField = false;
